@@ -11,8 +11,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.adx2099.roomadx2099example.data.GameContract;
-
 public class AddGameActivity extends AppCompatActivity {
     private int mOwned;
 

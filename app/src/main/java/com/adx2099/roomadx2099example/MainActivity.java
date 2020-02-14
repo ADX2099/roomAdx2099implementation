@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
-import com.adx2099.roomadx2099example.data.GameContract;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
