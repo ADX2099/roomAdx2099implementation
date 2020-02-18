@@ -31,25 +31,7 @@ public class CustomCursorAdapter extends RecyclerView.Adapter<CustomCursorAdapte
 
     @Override
     public void onBindViewHolder(@NonNull CustomCursorAdapter.TaskViewHolder holder, int position) {
-        int idIndex = mCursor.getColumnIndex(GameContract.GameEntry._ID);
-        int descriptionIndex = mCursor.getColumnIndex(GameContract.GameEntry.COLUMN_DESCRIPTION);
-        int priorityIndex = mCursor.getColumnIndex(GameContract.GameEntry.COLUMN_OWNED);
-        mCursor.moveToPosition(position);
 
-        final int id = mCursor.getInt(idIndex);
-        String description = mCursor.getString(descriptionIndex);
-        int priority = mCursor.getInt(priorityIndex);
-
-        holder.itemView.setTag(id);
-        holder.gameDescriptionView.setText(description);
-
-        String priorityString = "" + priority; // converts int to String
-        holder.ownedView.setText(priorityString);
-
-        GradientDrawable priorityCircle = (GradientDrawable) holder.ownedView.getBackground();
-        // Get the appropriate background color based on the priority
-        int priorityColor = getOwnedColor(priority);
-        priorityCircle.setColor(priorityColor);
 
     }
 

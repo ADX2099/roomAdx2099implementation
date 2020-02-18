@@ -1,11 +1,13 @@
 <resources>
     <string name="app_name">RoomAdx2099Example</string>
+    <string name="add_game_activity_name">Add Game</string>
 
     <string name="edit_task_description">Describe your game&#8230;</string>
     <string name="owned_string">Owned</string>
 
     <string name="owned_yes">I own this game</string>
-    <string name="owned_no">I don`t own the game</string>
+    <string name="owned_no">Don`t own the game</string>
 
     <string name="add_button">Add</string>
+    <string name="update_button">Update</string>
 </resources>

@@ -45,11 +45,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 int id = (int) viewHolder.itemView.getTag();
 
                 String stringId = Integer.toString(id);
-                Uri uri = GameContract.GameEntry.CONTENT_URI;
+               /* Uri uri = GameContract.GameEntry.CONTENT_URI;
                 uri =uri.buildUpon().appendPath(stringId).build();
 
                 getContentResolver().delete(uri, null, null);
-                getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, MainActivity.this);
+                getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, MainActivity.this);*/
             }
         }).attachToRecyclerView(mRecyclerView);
 
@@ -66,10 +66,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
-        getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, this);
+       // getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, this);
     }
 
     @NonNull
