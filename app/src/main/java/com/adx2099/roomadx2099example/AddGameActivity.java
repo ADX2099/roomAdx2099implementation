@@ -20,12 +20,12 @@ import com.adx2099.roomadx2099example.database.GameEntry;
 import java.util.Date;
 
 public class AddGameActivity extends AppCompatActivity {
-    public static final String EXTRA_TASK_ID = "extraTaskId";
-    public static final String INSTANCE_TASK_ID = "instanceTaskId";
+    public static final String EXTRA_GAME_ID = "extraGameId";
+    public static final String INSTANCE_GAME_ID = "instanceGameId";
     public static final int OWNED = 1;
     public static final int NOT_OWNED = 2;
 
-    private static final int DEFAULT_TASK_ID = -1;
+    private static final int DEFAULT_GAME_ID = -1;
 
     private static final String TAG = AddGameActivity.class.getSimpleName();
 
@@ -33,7 +33,7 @@ public class AddGameActivity extends AppCompatActivity {
     RadioGroup mRadioGroup;
     Button mButton;
 
-    private int mTaskId = DEFAULT_TASK_ID;
+    private int mGameId = DEFAULT_GAME_ID;
     //Agregamos la variable para  la instancia de la base de datos
     private AppDatabase mDb;
 
@@ -46,26 +46,39 @@ public class AddGameActivity extends AppCompatActivity {
         //agregamos al instancia de la base
         mDb = AppDatabase.getInstance(getApplicationContext());
 
-        if(savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_TASK_ID)){
-            mTaskId = savedInstanceState.getInt(INSTANCE_TASK_ID, DEFAULT_TASK_ID);
+        if(savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_GAME_ID)){
+            mGameId = savedInstanceState.getInt(INSTANCE_GAME_ID, DEFAULT_GAME_ID);
         }
         Intent intent = getIntent();
-        if(intent != null && intent.hasExtra(EXTRA_TASK_ID)){
+        if(intent != null && intent.hasExtra(EXTRA_GAME_ID)){
             mButton.setText(R.string.update_button);
-            if(mTaskId == DEFAULT_TASK_ID){
+            if(mGameId == DEFAULT_GAME_ID){
+                mGameId = intent.getIntExtra(EXTRA_GAME_ID, DEFAULT_GAME_ID);
+                AppExecutors.getInstance().DiskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        final GameEntry game = mDb.gameDao().loadGameByuId(mGameId);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                populateUI(game);
+                            }
+                        });
 
+                    }
+                });
             }
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(INSTANCE_TASK_ID, mTaskId);
+        outState.putInt(INSTANCE_GAME_ID, mGameId);
         super.onSaveInstanceState(outState);
     }
 
     private void initViews() {
-        mEditText = findViewById(R.id.editTextTaskDescription);
+        mEditText = findViewById(R.id.editTextGameDescription);
         mRadioGroup = findViewById(R.id.radioGroup);
 
         mButton = findViewById(R.id.addButton);
@@ -77,6 +90,16 @@ public class AddGameActivity extends AppCompatActivity {
         });
     }
 
+    private void populateUI(GameEntry game){
+        if (game == null) {
+            return;
+        }
+        mEditText.setText(game.getDescription());
+        setOwnedInView(game.getOwned());
+    }
+
+
+
     private void onSaveButtonClicked() {
 
         String description = mEditText.getText().toString();
@@ -84,10 +107,21 @@ public class AddGameActivity extends AppCompatActivity {
 
         Date date = new Date();
 
-        GameEntry gameEntry = new GameEntry(description, owned, date);
+        final GameEntry gameEntry = new GameEntry(description, owned, date);
+        AppExecutors.getInstance().DiskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if(mGameId == DEFAULT_GAME_ID){
+                    mDb.gameDao().insertGame(gameEntry);
+                }else{
+                    gameEntry.setId(mGameId);
+                    mDb.gameDao().updateGame(gameEntry);
+                }
 
-        mDb.gameDao().insertGame(gameEntry);
-        finish();
+                finish();
+            }
+        });
+
     }
 
     private int getOwnedFromViews() {
@@ -117,7 +151,7 @@ public class AddGameActivity extends AppCompatActivity {
     }
 
     public void onClickAddTask(View view){
-        String input = ((EditText) findViewById(R.id.editTextTaskDescription)).getText().toString();
+        String input = ((EditText) findViewById(R.id.editTextGameDescription)).getText().toString();
         if(input.length() == 0){
             return;
         }

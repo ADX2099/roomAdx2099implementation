@@ -3,8 +3,11 @@ package com.adx2099.roomadx2099example;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,16 +16,23 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
+import com.adx2099.roomadx2099example.database.AppDatabase;
+import com.adx2099.roomadx2099example.database.GameEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements GameAdapter.ItemClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int TASK_LOADER_ID = 0;
 
-    private CustomCursorAdapter mAdapter;
+    private GameAdapter mAdapter;
     RecyclerView mRecyclerView;
+
+    private AppDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +41,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerViewGames);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        mAdapter = new CustomCursorAdapter(this);
+        mAdapter = new GameAdapter(this, this);
         mRecyclerView.setAdapter(mAdapter);
+
+        DividerItemDecoration decoration = new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL);
+        mRecyclerView.addItemDecoration(decoration);
+
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -41,15 +55,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
 
             @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int id = (int) viewHolder.itemView.getTag();
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+                AppExecutors.getInstance().DiskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        int thePosition = viewHolder.getAdapterPosition();
+                        List<GameEntry> games = mAdapter.getGames();
+                        mDb.gameDao().deleteGame(games.get(thePosition));
 
-                String stringId = Integer.toString(id);
-               /* Uri uri = GameContract.GameEntry.CONTENT_URI;
-                uri =uri.buildUpon().appendPath(stringId).build();
-
-                getContentResolver().delete(uri, null, null);
-                getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, MainActivity.this);*/
+                    }
+                });
             }
         }).attachToRecyclerView(mRecyclerView);
 
@@ -64,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
+        mDb = AppDatabase.getInstance(getApplicationContext());
+        retrieveGames();
     }
 
 
@@ -71,22 +88,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onResume() {
         super.onResume();
-       // getSupportLoaderManager().restartLoader(TASK_LOADER_ID, null, this);
-    }
 
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
 
     }
 
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+    private void retrieveGames() {
+        final LiveData<List<GameEntry>> games = mDb.gameDao().loadAllGames();
+        games.observe(this, new Observer<List<GameEntry>>() {
+            @Override
+            public void onChanged(List<GameEntry> gameEntries) {
+                mAdapter.setGames(gameEntries);
+            }
+        });
+    }
 
+
+    @Override
+    public void onItemClickListener(int itemId) {
+        Intent updateIntent = new Intent(MainActivity.this, AddGameActivity.class);
+        updateIntent.putExtra(AddGameActivity.EXTRA_GAME_ID, itemId);
+        startActivity(updateIntent);
     }
 }

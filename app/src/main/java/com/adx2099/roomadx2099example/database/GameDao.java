@@ -1,5 +1,6 @@
 package com.adx2099.roomadx2099example.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface GameDao {
 
     @Query("SELECT * FROM game")
-    List<GameEntry> loadAllGames();
+    LiveData<List<GameEntry>> loadAllGames();
 
     @Insert
     void insertGame(GameEntry gameEntry);
@@ -23,5 +24,8 @@ public interface GameDao {
 
     @Delete
     void deleteGame(GameEntry gameEntry);
+
+    @Query("SELECT * FROM game WHERE id = :id")
+    GameEntry loadGameByuId(int id);
 
 }
