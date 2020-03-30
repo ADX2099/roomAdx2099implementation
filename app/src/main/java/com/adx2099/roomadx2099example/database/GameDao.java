@@ -26,6 +26,6 @@ public interface GameDao {
     void deleteGame(GameEntry gameEntry);
 
     @Query("SELECT * FROM game WHERE id = :id")
-    GameEntry loadGameByuId(int id);
+    LiveData<GameEntry> loadGameByuId(int id);
 
 }

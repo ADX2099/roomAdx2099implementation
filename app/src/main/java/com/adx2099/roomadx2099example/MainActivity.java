@@ -1,22 +1,17 @@
 package com.adx2099.roomadx2099example;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import com.adx2099.roomadx2099example.database.AppDatabase;
@@ -80,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements GameAdapter.ItemC
         });
 
         mDb = AppDatabase.getInstance(getApplicationContext());
-        retrieveGames();
+        setUpViewModel();
     }
 
 
@@ -92,9 +87,10 @@ public class MainActivity extends AppCompatActivity implements GameAdapter.ItemC
 
     }
 
-    private void retrieveGames() {
-        final LiveData<List<GameEntry>> games = mDb.gameDao().loadAllGames();
-        games.observe(this, new Observer<List<GameEntry>>() {
+    private void setUpViewModel() {
+
+        MainViewModel mainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mainViewModel.getGames().observe(this, new Observer<List<GameEntry>>() {
             @Override
             public void onChanged(List<GameEntry> gameEntries) {
                 mAdapter.setGames(gameEntries);
